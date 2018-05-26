@@ -9,7 +9,8 @@
 		We consider the problem of counting motifs in bipartite affiliation networks, such as author-paper, user-product, and actor-movie relations. 
 		We focus on counting the number of occurrences of a "butterfly", a complete 2×2 biclique, the simplest cohesive higher-order structure in a bipartite graph. 
 		Our main contribution is a suite of randomized algorithms that can quickly approximate the number of butterflies in a graph with a provable guarantee on accuracy. 
-		An experimental evaluation on large real-world networks shows that our algorithms return accurate estimates within a few seconds, even for networks with trillions of butterflies and hundreds of millions of edges.
+		An experimental evaluation on large real-world networks shows that our algorithms return accurate estimates within a few seconds, even for networks with trillions of 
+		butterflies and hundreds of millions of edges.
 */
 
 #define _CRT_SECURE_NO_WARNINGS
@@ -55,7 +56,7 @@ char input_address[2000], output_address [2000] ;
 
 set < pair <int, int> > edges;
 vector < pair <int, int> > list_of_edges;
-map < int, int > vertices;
+map < int, int > vertices [2];
 vector <int> index_map;
 vector <int> vertices_in_left;
 vector <int> vertices_in_right;
@@ -78,11 +79,12 @@ vector <ll> sum_deg_neighbors;
 vector <int> aux_array_two_neighboorhood;
 
 void clear_everything() {
+	largest_index_in_partition[0] = largest_index_in_partition[1] = 0;
 	n_vertices = 0;
 	n_edges = 0;
 	edges.clear();
 	list_of_edges.clear();
-	vertices.clear();
+	vertices[0].clear(); vertices[1].clear();
 	index_map.clear();
 	vertices_in_left.clear();
 	vertices_in_right.clear();
@@ -108,27 +110,26 @@ void resize_all() {
 }
 
 // ------------- Read the graph ---------------------
-void add_vertex(int &A) {
-	if (vertices.find(A) == vertices.end()) {
-		vertices[A] = n_vertices;
-		A = vertices[A];
-		adj.push_back(vector <int>());
-		index_map.push_back(A);
-		n_vertices++;
-		
-	}else 
-		A = vertices[A];
+void add_vertex(int A, bool side) {
+	if (vertices[side].find(A) == vertices[side].end()) {
+		if (side == false) vertices_in_left.push_back(A);
+		else vertices_in_right.push_back(A);
+		vertices[side][A] = 0;
+	}
 }
+
+void get_index(int &A, bool side) {
+	if (vertices[side].find(A) == vertices[side].end()) {
+		vertices[side][A] = largest_index_in_partition[side] ++ ;
+	}
+	A = vertices[side][A];
+}
+
 void add_edge(int &A, int &B) {
-	if (A != B && edges.find(make_pair(A, B)) == edges.end()) {
-		add_vertex(A);
-		add_vertex(B);
-		vertices_in_left.push_back(A);
-		vertices_in_right.push_back(B);
-		adj[A].push_back(B);
-		adj[B].push_back(A);
+	add_vertex(A, false);
+	add_vertex(B, true);
+	if (edges.find(make_pair(A, B)) == edges.end()) {
 		edges.insert(make_pair(A, B));
-		edges.insert(make_pair(B, A));
 		n_edges++;
 	}
 }
@@ -143,7 +144,7 @@ void get_graph() {
 	string s;
 	cin.clear();
 	while (getline(cin, s)) {
-		stringstream ss; ss << s;
+ 		stringstream ss; ss << s;
 		vector <string> vec_str; 
 		for (string z; ss >> z; vec_str.push_back(z));
 		if (SZ(vec_str) >= 2) {
@@ -156,6 +157,21 @@ void get_graph() {
 				add_edge(A, B);
 			}
 		}
+	}
+	vertices[0].clear();
+	vertices[1].clear();
+	largest_index_in_partition[0] = 0;
+	largest_index_in_partition[1] = SZ(vertices_in_left);
+	n_vertices = SZ(vertices_in_left) + SZ(vertices_in_right);
+	adj.resize(n_vertices, vector <int> ());
+	for (auto edge : edges) {
+		int A = edge.first;
+		int B = edge.second;
+		get_index(A, false);
+		get_index(B, true);
+		adj[A].push_back(B);
+		adj[B].push_back(A);
+		list_of_edges.push_back(make_pair(A, B));
 	}
 	fclose(stdin);
 }
@@ -191,15 +207,15 @@ double fast_neighbor_intersections(int a, int b) {
 }
 
 
-ll exact_butterfly_counting() {
+ll exact_butterfly_counting(vector < vector <int> > &graph) {
 	int side = n_wedge_in_partition[0] < n_wedge_in_partition[1];
 	ld res = 0;
 	for (int vertex = side == 0 ? 0 : SZ(vertices_in_left) ; vertex < largest_index_in_partition[side]; vertex++) {
 		int idx = 0;
-		for (int j = 0; j < SZ(sampled_adj_list[vertex]); j++) {
-			int neighbor = sampled_adj_list[vertex][j];
-			for (int k = 0; k < SZ(sampled_adj_list[neighbor]); k++) {
-				int two_hop_neighborhood = sampled_adj_list[neighbor][k];
+		for (int j = 0; j < SZ(graph[vertex]); j++) {
+			int neighbor = graph[vertex][j];
+			for (int k = 0; k < SZ(graph[neighbor]); k++) {
+				int two_hop_neighborhood = graph[neighbor][k];
 				if (vertex > two_hop_neighborhood) {
 					res += hashmap_C[two_hop_neighborhood];
 					hashmap_C[two_hop_neighborhood] ++;
@@ -310,7 +326,7 @@ ld colorful_sparsification(int num_clr) {
 			n_wedge_in_partition[1] += 2 * SZ(sampled_adj_list[B]) - 1;
 		}
 	}
-	ld beta = exact_butterfly_counting();
+	ld beta = exact_butterfly_counting(sampled_adj_list);
 	return beta * num_clr * num_clr * num_clr;
 }
 
@@ -334,7 +350,7 @@ ld edge_saprsification(double prob) {
 			n_wedge_in_partition[1] += 2 * SZ(sampled_adj_list[B]) - 1;
 		}
 	}
-	ld beta = exact_butterfly_counting();
+	ld beta = exact_butterfly_counting(sampled_adj_list);
 	return (ld)beta / (prob * prob * prob * prob);
 }
 
@@ -742,7 +758,7 @@ void fast_wedge_sampling_time_tracker() {
 void exact_algorithm_time_tracker() {
 	cerr << " Exact algorithm is running ... (please wait) " << endl;
 	double beg_clock = clock();
-	exact_n_bf = exact_butterfly_counting();
+	exact_n_bf = exact_butterfly_counting(adj);
 	double end_clock = clock();
 	double elapsed_time = (end_clock - beg_clock) / CLOCKS_PER_SEC;
 	cerr << " Exact algorithm is done in " << elapsed_time << " secs. There are " << exact_n_bf << " butterflies." << endl;
@@ -751,17 +767,18 @@ void exact_algorithm_time_tracker() {
 string algorithm_names [8] = { "Exact", "Edge Sampling", "Fast Edge Sampling", "Vertex Sampling", "Wedge Sampling", "Edge Sparsification", "Colorful Sparsification" };
 
 void read_the_graph() {
+	clear_everything();
 	cerr << " Insert the input (bipartite network) file location: ";
 	cin >> input_address;
 	cerr << " Insert the output file: ";
 	cin >> output_address;
 	freopen(output_address, "w", stdin);
-	cerr << " -------------------------------------------------------------------------- \n";
+	cerr << " ---------------------------------------------------------------------------------------------------------------------- \n";
 	cerr << "| * Note that edges should be separated line by line.\n\
 | In each line, the first integer number is considered as a vertex in the left partition of bipartite network, \n\
 | and the second integer number is a vertex in the right partition. \n\
 | In addition, self-loops and multiple edges are removed from the given bipartite network. \n";
-	cerr << " -------------------------------------------------------------------------- \n";
+	cerr << " ---------------------------------------------------------------------------------------------------------------------- \n";
 
 	cerr << " processing the graph ... (please wait) \n";
 
