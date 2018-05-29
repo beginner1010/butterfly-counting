@@ -207,7 +207,6 @@ double fast_neighbor_intersections(int a, int b) {
 	return sum_wedges;
 }
 
-
 ll exact_butterfly_counting(vector < vector <int> > &graph) {
 	int side = n_wedge_in_partition[0] < n_wedge_in_partition[1];
 	ld res = 0;
@@ -445,25 +444,16 @@ ld edge_sampling(mt19937 &eng, uniform_int_distribution<int> &dis, int &iter, in
 	return ans;
 }
 
-ld limit;
 ld fast_edge_sampling(mt19937 &eng, uniform_int_distribution<int> &dis, int &iter, int &alpha) {
 	ld res = 0;
 	for (; iter < alpha; iter++) {
-		ld x;
 		int random_edge = dis(eng);
 		int a = list_of_edges[random_edge].first;
 		int b = list_of_edges[random_edge].second;
-		if (sum_deg_neighbors[a] > sum_deg_neighbors[b]) {
-			swap(a, b);
-		}
-		if (SZ(adj[a]) + sum_deg_neighbors[a] * 2 > N_FAST_EDGE_BFC_ITERATIONS)
-			res += randomized_BFC_per_edge(a, b);
-		else
-			res += fast_exact_BFC_per_edge(a, b);
+		res += fast_exact_BFC_per_edge(a, b);
 	}
 	return res;
 }
-
 
 ld vertex_sampling(uniform_int_distribution<ll> &dis, mt19937_64 &eng, int &mx, int &iter, int &alpha) {
 	ld res = 0;
@@ -766,7 +756,6 @@ void exact_algorithm_time_tracker() {
 }
 
 string algorithm_names [8] = { "Exact", "Edge Sampling", "Fast Edge Sampling", "Vertex Sampling", "Wedge Sampling", "Edge Sparsification", "Colorful Sparsification" };
-
 void read_the_graph() {
 	clear_everything();
 	cerr << " Insert the input (bipartite network) file location" << endl;
@@ -857,7 +846,6 @@ void choose_algorithm() {
 		coloful_sparsification_time_tracker();
 	}
 }
-
 
 int main() {
 	std::ios::sync_with_stdio(false);
