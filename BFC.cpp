@@ -42,14 +42,13 @@ using namespace std;
 #define min(x,y) ((x)<(y)?(x):(y))
 
 const int ITER_VER = 2200;
-
 const ll shift = 1000 * 1000 * 1000LL;
-const double TIME_LIMIT = 10;
+const double TIME_LIMIT = 20;
 const int N_WEDGE_ITERATIONS = 2 * 1000 * 1000 * 10;
-const int ITERATIONS_SAMPLING = 31;
-const int N_SPARSIFICATION_ITERATIONS = 151;
+const int ITERATIONS_SAMPLING = 101;
+const int N_SPARSIFICATION_ITERATIONS = 101;
 const int TIME_LIMIT_SPARSIFICATION = 10000; // !half an hour
-const int N_FAST_EDGE_BFC_ITERATIONS = 2105; // used for fast edge sampling
+const int N_FAST_EDGE_BFC_ITERATIONS = 1900; // used for fast edge sampling
 const int N_FAST_WEDGE_ITERATIONS = 50; // used for fast wedge sampling
 
 char input_address[2000], output_address [2000] ;
@@ -149,8 +148,8 @@ void get_graph() {
 		for (string z; ss >> z; vec_str.push_back(z));
 		if (SZ(vec_str) >= 2) {
 			bool is_all_num = true;
-			for (int i = 0; i < SZ(vec_str); i++) is_all_num &= all_num(vec_str[i]);
-			if (is_all_num && SZ(vec_str) >= 2) {
+			for (int i = 0; i < min (2, SZ(vec_str)) ; i++) is_all_num &= all_num(vec_str[i]);
+			if (is_all_num) {
 				int A, B;
 				ss.clear(); ss << vec_str[0]; ss >> A;
 				ss.clear(); ss << vec_str[1]; ss >> B;
@@ -173,6 +172,8 @@ void get_graph() {
 		adj[B].push_back(A);
 		list_of_edges.push_back(make_pair(A, B));
 	}
+	for (int i = 0; i < n_vertices; i++)
+		sort(adj[i].begin(), adj[i].end());
 	fclose(stdin);
 }
 // ------------- Read the graph ---------------------
@@ -586,7 +587,7 @@ void fast_edge_sampling_time_tracker() {
 	double elapsed_time = 0;
 	ld res = 0;
 	vector <ld> total_res;
-	for (int alpha = 1000, iter = 0;; alpha += 1000) {
+	for (int alpha = 10, iter = 0;; alpha += 10) {
 		double cur_elapsed_time = 0;
 		vector < pair < ld, pair <ld, ld> > > aux_res;
 		double res_from_previous_iterations = 0;
@@ -743,11 +744,11 @@ void fast_wedge_sampling_time_tracker() {
 		sort(aux_res.begin(), aux_res.end()); // take the median
 		double aux_elapsed_time = aux_res[ITERATIONS_SAMPLING / 2].second.first;
 		ld error = aux_res[ITERATIONS_SAMPLING / 2].first;
-		cur_elapsed_time += aux_elapsed_time;
+		total_elapsed_time += aux_elapsed_time;
 		total += aux_res[ITERATIONS_SAMPLING / 2].second.second;
 
-		cout << cur_elapsed_time + time_n_wedges << " " << iter << " " << error << endl;
-		if (cur_elapsed_time + time_n_wedges >= TIME_LIMIT) {
+		cout << total_elapsed_time + time_n_wedges << " " << iter << " " << error << endl;
+		if (total_elapsed_time + time_n_wedges >= TIME_LIMIT) {
 			cout << "iterations: " << alpha << endl;
 			break;
 		}
@@ -761,33 +762,31 @@ void exact_algorithm_time_tracker() {
 	exact_n_bf = exact_butterfly_counting(adj);
 	double end_clock = clock();
 	double elapsed_time = (end_clock - beg_clock) / CLOCKS_PER_SEC;
-	cerr << " Exact algorithm is done in " << elapsed_time << " secs. There are " << exact_n_bf << " butterflies." << endl;
+	cout << " Exact algorithm is done in " << elapsed_time << " secs. There are " << exact_n_bf << " butterflies." << endl;
 }
 
 string algorithm_names [8] = { "Exact", "Edge Sampling", "Fast Edge Sampling", "Vertex Sampling", "Wedge Sampling", "Edge Sparsification", "Colorful Sparsification" };
 
 void read_the_graph() {
 	clear_everything();
-	cerr << " Insert the input (bipartite network) file location: ";
-	cin >> input_address;
-	cerr << " Insert the output file: ";
-	cin >> output_address;
-	freopen(output_address, "w", stdin);
+	cerr << " Insert the input (bipartite network) file location" << endl;
+	cerr << " >>> "; cin >> input_address;
+	cerr << " Insert the output file" << endl;
+	cerr << " >>> "; cin >> output_address;
+	freopen(output_address, "w", stdout);
 	cerr << " ---------------------------------------------------------------------------------------------------------------------- \n";
 	cerr << "| * Note that edges should be separated line by line.\n\
 | In each line, the first integer number is considered as a vertex in the left partition of bipartite network, \n\
 | and the second integer number is a vertex in the right partition. \n\
-| In addition, self-loops and multiple edges are removed from the given bipartite network. \n";
+| In addition, multiple edges are removed from the given bipartite network.\n\
+| Also, note that in this version of the source code, we did NOT remove vertices with degree zero.\n";
 	cerr << " ---------------------------------------------------------------------------------------------------------------------- \n";
 
-	cerr << " processing the graph ... (please wait) \n";
+	cerr << " Processing the graph ... (please wait) \n";
 
 	get_graph();
 	resize_all();
 
-	for (int i = 0; i < n_vertices; i++) {
-		sort(adj[i].begin(), adj[i].end());
-	}
 	largest_index_in_partition[0] = SZ(vertices_in_left);
 	largest_index_in_partition[1] = n_vertices;
 
@@ -815,20 +814,21 @@ void choose_algorithm() {
 	 [5]: Wedge Sampling Algorithm \n\
 	 [6]: Edge Sparsification Algorithm \n\
 	 [7]: Colorful Sparsification Algorithm \n";
+		cerr << " >>> ";
 		cin >> s;
 		if (SZ(s) == 1 && s[0] >= '0' && s[0] <= '7') break;
 	}
 	int chosen = s[0] - '0';
 	if (chosen > 1) {
 		cerr << algorithm_names[chosen - 1] << " Algorithm is a randomized algorithm. To report the accuracy, we need exact number of butterflies" << endl;
-		cerr << " Insert the number of butterflies. If you do not know that number insert a letter. We will run the exact algorithm to find that number." << endl;
-		string comm; cin >> comm;
+		cerr << " Insert the number of butterflies. In the case, you do not know the number of butterflies, insert \"N\".\n We will run the exact algorithm for you." << endl;
+		string comm; cerr << " >>> "; cin >> comm;
 		read_the_graph();
 		if (all_num(comm)) {
 			stringstream ss; ss << comm; ss >> exact_n_bf;
 		}
 		else {
-			cerr << " We are going to run the exact algorithm ...";
+			cerr << " As you do not know the exact number of butterflies, we are going to run the exact algorithm ... \n";
 			exact_algorithm_time_tracker();
 		}
 	}
@@ -862,5 +862,6 @@ void choose_algorithm() {
 int main() {
 	std::ios::sync_with_stdio(false);
 	choose_algorithm();
+	cerr << " Take a look at the output file ..." << endl;
 	return 0;
 }
