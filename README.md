@@ -10,5 +10,5 @@ We consider the problem of counting motifs in bipartite affiliation networks, su
 
 <h2 align="center">Implementation</h2>
 __BFC.cpp__ is the source code for an exact algorithm and a suite of randomized algorithms to count the number of butterflies in a bipartite network. This is the implementation for our paper on ArXiv: https://arxiv.org/pdf/1801.00338v4.pdf
-
+<br> </br>
 ___Disclaimer:__ For the sake of simplicity for reviewers and researchers to understand our implementation, this source code is a little bit different than what we ran on the large bipartite networks. For example, in this implementation we __DO NOT__ remove vertices with degree zero, or we use __vectors__ for adjacency lists and __binary_search__ function for edge sampling. However, as mentioned in the paper, we could use __hashsets (unordered_sets)__ instead of __vectors__._
