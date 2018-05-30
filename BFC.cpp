@@ -47,7 +47,7 @@ using namespace boost::random;
 
 const int ITER_VER = 2200;
 const ll shift = 1000 * 1000 * 1000LL;
-const double TIME_LIMIT = 20;
+const double TIME_LIMIT = 3;
 const int N_WEDGE_ITERATIONS = 2 * 1000 * 1000 * 10;
 const int ITERATIONS_SAMPLING = 5;
 const int N_SPARSIFICATION_ITERATIONS = 5;
@@ -192,7 +192,6 @@ void get_graph() {
 			sum_deg_neighbors[i] += SZ(adj[neighbor]);
 		}
 	}
-	cerr << " for test # edges :: " << SZ(list_of_edges) << " left :: " << SZ(vertices_in_left) << " right :: " << SZ(vertices_in_right) << endl;
 	sort(list_of_edges.begin(), list_of_edges.end());
 	fclose(stdin);
 }
@@ -776,7 +775,7 @@ void exact_algorithm_time_tracker() {
 	exact_n_bf = exact_butterfly_counting(adj);
 	double end_clock = clock();
 	double elapsed_time = (end_clock - beg_clock) / CLOCKS_PER_SEC;
-	cout << " Exact algorithm is done in " << elapsed_time << " secs. There are " << exact_n_bf << " butterflies." << endl;
+	cout << " Exact algorithm is done in " << elapsed_time << " secs. There are " << (ll)exact_n_bf << " butterflies." << endl;
 }
 
 string algorithm_names[8] = { "Exact", "Edge Sampling", "Fast Edge Sampling", "Vertex Sampling", "Wedge Sampling", "Edge Sparsification", "Colorful Sparsification" };
@@ -829,7 +828,7 @@ void choose_algorithm() {
 			stringstream ss; ss << comm; ss >> exact_n_bf;
 		}
 		else {
-			cerr << " As you do not know the exact number of butterflies, we are running the exact algorithm ... \n";
+			cerr << " As you do not know the exact number of butterflies, we are running the exact algorithm ... (please wait)\n";
 			exact_algorithm_time_tracker();
 		}
 	}
