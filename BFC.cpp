@@ -1,16 +1,16 @@
 /*
-Author: Seyed-Vahid Sanei-Mehri
-Contact: vahid.sanei@gmail.com or vas@iastate.edu
+	Author: Seyed-Vahid Sanei-Mehri
+	Contact: vahid.sanei@gmail.com or vas@iastate.edu
 
-Here is the source code for ** BUTTERFLY COUNTING IN BIPARTITE NETWORKS **
-On Arxiv: Sanei-Mehri, Seyed-Vahid, Erdem Saryuce, and Srikanta Tirthapura. "Butterfly Counting in Bipartite Networks." arXiv preprint arXiv:1801.00338 (2017).
+	Here is the source code for ** BUTTERFLY COUNTING IN BIPARTITE NETWORKS **
+	On Arxiv: Sanei-Mehri, Seyed-Vahid, Erdem Saryuce, and Srikanta Tirthapura. "Butterfly Counting in Bipartite Networks." arXiv preprint arXiv:1801.00338 (2017).
 
-Abstract:
-We consider the problem of counting motifs in bipartite affiliation networks, such as author-paper, user-product, and actor-movie relations.
-We focus on counting the number of occurrences of a "butterfly", a complete 2×2 biclique, the simplest cohesive higher-order structure in a bipartite graph.
-Our main contribution is a suite of randomized algorithms that can quickly approximate the number of butterflies in a graph with a provable guarantee on accuracy.
-An experimental evaluation on large real-world networks shows that our algorithms return accurate estimates within a few seconds, even for networks with trillions of
-butterflies and hundreds of millions of edges.
+	Abstract:
+		We consider the problem of counting motifs in bipartite affiliation networks, such as author-paper, user-product, and actor-movie relations. 
+		We focus on counting the number of occurrences of a "butterfly", a complete 2×2 biclique, the simplest cohesive higher-order structure in a bipartite graph. 
+		Our main contribution is a suite of randomized algorithms that can quickly approximate the number of butterflies in a graph with a provable guarantee on accuracy. 
+		An experimental evaluation on large real-world networks shows that our algorithms return accurate estimates within a few seconds, even for networks with trillions of 
+		butterflies and hundreds of millions of edges.
 */
 
 #define _CRT_SECURE_NO_WARNINGS
@@ -47,7 +47,7 @@ using namespace boost::random;
 
 const int ITER_VER = 2200;
 const ll shift = 1000 * 1000 * 1000LL;
-const double TIME_LIMIT = 3;
+const double TIME_LIMIT = 20;
 const int N_WEDGE_ITERATIONS = 2 * 1000 * 1000 * 10;
 const int ITERATIONS_SAMPLING = 5;
 const int N_SPARSIFICATION_ITERATIONS = 5;
@@ -55,11 +55,11 @@ const int TIME_LIMIT_SPARSIFICATION = 10000; // !half an hour
 const int N_FAST_EDGE_BFC_ITERATIONS = 2100; // used for fast edge sampling
 const int N_FAST_WEDGE_ITERATIONS = 50; // used for fast wedge sampling
 
-char input_address[2000], output_address[2000];
+char input_address[2000], output_address [2000] ;
 
 set < pair <int, int> > edges;
 vector < pair <int, int> > list_of_edges;
-map < int, int > vertices[2];
+map < int, int > vertices [2];
 vector <int> index_map;
 vector <int> vertices_in_left;
 vector <int> vertices_in_right;
@@ -122,7 +122,7 @@ void add_vertex(int A, int side) {
 
 void get_index(int &A, int side) {
 	if (vertices[side].find(A) == vertices[side].end()) {
-		vertices[side][A] = largest_index_in_partition[side] ++;
+		vertices[side][A] = largest_index_in_partition[side] ++ ;
 	}
 	A = vertices[side][A];
 }
@@ -137,21 +137,21 @@ void add_edge(int &A, int &B) {
 }
 
 bool all_num(string &s) {
-	for (int i = 0; i < SZ(s); i++) if ((s[i] >= '0' && s[i] <= '9') == false) return false;
+	for (int i = 0; i < SZ(s); i++) if ((s[i] >= '0' && s [i] <= '9') == false) return false;
 	return true;
 }
 
 void get_graph() {
-	freopen(input_address, "r", stdin);
+	freopen(input_address, "r", stdin); 
 	string s;
 	cin.clear();
 	while (getline(cin, s)) {
-		stringstream ss; ss << s;
-		vector <string> vec_str;
+ 		stringstream ss; ss << s;
+		vector <string> vec_str; 
 		for (string z; ss >> z; vec_str.push_back(z));
 		if (SZ(vec_str) >= 2) {
 			bool is_all_num = true;
-			for (int i = 0; i < min(2, SZ(vec_str)); i++) is_all_num &= all_num(vec_str[i]);
+			for (int i = 0; i < min (2, SZ(vec_str)) ; i++) is_all_num &= all_num(vec_str[i]);
 			if (is_all_num) {
 				int A, B;
 				ss.clear(); ss << vec_str[0]; ss >> A;
@@ -165,7 +165,7 @@ void get_graph() {
 	largest_index_in_partition[0] = 0;
 	largest_index_in_partition[1] = SZ(vertices_in_left);
 	n_vertices = SZ(vertices_in_left) + SZ(vertices_in_right);
-	adj.resize(n_vertices, vector <int>());
+	adj.resize(n_vertices, vector <int> ());
 	for (auto edge : edges) {
 		int A = edge.first;
 		int B = edge.second;
@@ -192,6 +192,7 @@ void get_graph() {
 			sum_deg_neighbors[i] += SZ(adj[neighbor]);
 		}
 	}
+	cerr << " for test # edges :: " << SZ(list_of_edges) << " left :: " << SZ(vertices_in_left) << " right :: "  << SZ(vertices_in_right) << endl;
 	sort(list_of_edges.begin(), list_of_edges.end());
 	fclose(stdin);
 }
@@ -229,7 +230,7 @@ double fast_neighbor_intersections(int a, int b) {
 ll exact_butterfly_counting(vector < vector <int> > &graph) {
 	int side = n_wedge_in_partition[0] < n_wedge_in_partition[1];
 	ld res = 0;
-	for (int vertex = side == 0 ? 0 : SZ(vertices_in_left); vertex < largest_index_in_partition[side]; vertex++) {
+	for (int vertex = side == 0 ? 0 : SZ(vertices_in_left) ; vertex < largest_index_in_partition[side]; vertex++) {
 		int idx = 0;
 		for (int j = 0; j < SZ(graph[vertex]); j++) {
 			int neighbor = graph[vertex][j];
@@ -332,8 +333,9 @@ ld colorful_sparsification(int num_clr) {
 	uniform_int_distribution<int> dis(0, num_clr - 1);
 	for (int i = 0; i < n_vertices; i++) {
 		clr[i] = dis(eng_colorful);
-		sampled_adj_list[i].clear();
 	}
+
+	sampled_adj_list.resize(n_vertices, (vector<int>()));
 	n_wedge_in_partition[0] = n_wedge_in_partition[1] = 0;
 	for (auto edge : edges) {
 		int A = edge.first;
@@ -354,8 +356,8 @@ ld edge_saprsification(double prob) {
 	random_device rdev_edge_sprs;
 	mt19937 eng_edg_sprs(rdev_edge_sprs());
 	uniform_real_distribution<double> dis(0.0, 1.0);
-	for (int i = 0; i < n_vertices; i++)
-		sampled_adj_list[i].clear();
+	
+	sampled_adj_list.resize(n_vertices, (vector<int>()));
 
 	n_wedge_in_partition[0] = n_wedge_in_partition[1] = 0;
 	for (auto edge : edges) {
@@ -411,7 +413,7 @@ ld fast_exact_BFC_per_edge(int a, int b) {
 }
 
 random_device rd_edge;
-mt19937_64 eng_ran_bfc_per_edge(rd_edge());
+mt19937_64 eng_ran_bfc_per_edge (rd_edge());
 ld randomized_BFC_per_edge(int a, int b) {
 	if (SZ(adj[a]) <= 1 || SZ(adj[b]) <= 1) {
 		return 0;
@@ -451,10 +453,10 @@ ld exact_bfc_per_vertex(int vertex) {
 	return res;
 }
 
-ld edge_sampling(mt19937_64 &eng, uniform_int_distribution < ll > &dis, int &iter, int &alpha) {
+ld edge_sampling(mt19937 &eng, uniform_int_distribution<int> &dis, int &iter, int &alpha) {
 	ld ans = 0;
 	for (; iter < alpha; iter++) {
-		ll random_edge = dis(eng);
+		int random_edge = dis(eng);
 		int a = list_of_edges[random_edge].first;
 		int b = list_of_edges[random_edge].second;
 		ans += fast_exact_BFC_per_edge(a, b);
@@ -462,16 +464,16 @@ ld edge_sampling(mt19937_64 &eng, uniform_int_distribution < ll > &dis, int &ite
 	return ans;
 }
 
-ld fast_edge_sampling(mt19937_64 &eng, uniform_int_distribution<ll> &dis, int &iter, int &alpha) {
+ld fast_edge_sampling(mt19937 &eng, uniform_int_distribution<int> &dis, int &iter, int &alpha) {
 	ld res = 0;
 	for (; iter < alpha; iter++) {
-		ll random_edge = dis(eng);
+		int random_edge = dis(eng);
 		int a = list_of_edges[random_edge].first;
 		int b = list_of_edges[random_edge].second;
 		if (sum_deg_neighbors[a] > sum_deg_neighbors[b]) {
 			swap(a, b);
 		}
-		if (SZ(adj[b]) + sum_deg_neighbors[a] * 2 > N_FAST_EDGE_BFC_ITERATIONS)
+		if (SZ(adj [b]) + sum_deg_neighbors[a] * 2 > N_FAST_EDGE_BFC_ITERATIONS)
 			res += randomized_BFC_per_edge(a, b);
 		else
 			res += fast_exact_BFC_per_edge(a, b);
@@ -479,10 +481,10 @@ ld fast_edge_sampling(mt19937_64 &eng, uniform_int_distribution<ll> &dis, int &i
 	return res;
 }
 
-ld vertex_sampling(uniform_int_distribution <ll> &dis, mt19937_64 &eng, int &mx, int &iter, int &alpha) {
+ld vertex_sampling(uniform_int_distribution<ll> &dis, mt19937_64 &eng, int &mx, int &iter, int &alpha) {
 	ld res = 0;
 	for (; iter < alpha; iter++) {
-		ll random_vertex = dis(eng);
+		int random_vertex = dis(eng);
 		res += exact_bfc_per_vertex(random_vertex);
 	}
 	return res;
@@ -555,8 +557,8 @@ void coloful_sparsification_time_tracker() {
 
 void edge_sampling_time_tracker() {
 	random_device rd;
-	mt19937_64 eng(rd());
-	uniform_int_distribution<ll> dis(0, n_edges - 1);
+	mt19937 eng(rd());
+	uniform_int_distribution<int> dis(0, n_edges - 1);
 	double elapsed_time = 0;
 	ld res = 0;
 	vector <ld> total_res;
@@ -596,8 +598,8 @@ void edge_sampling_time_tracker() {
 
 void fast_edge_sampling_time_tracker() {
 	random_device rd;
-	mt19937_64 genedg(rd());
-	uniform_int_distribution<ll> dis(0, n_edges - 1);
+	mt19937 genedg(rd());
+	uniform_int_distribution<int> dis(0, n_edges - 1);
 	double elapsed_time = 0;
 	ld res = 0;
 	vector <ld> total_res;
@@ -775,10 +777,10 @@ void exact_algorithm_time_tracker() {
 	exact_n_bf = exact_butterfly_counting(adj);
 	double end_clock = clock();
 	double elapsed_time = (end_clock - beg_clock) / CLOCKS_PER_SEC;
-	cout << " Exact algorithm is done in " << elapsed_time << " secs. There are " << (ll)exact_n_bf << " butterflies." << endl;
+	cout << " Exact algorithm is done in " << elapsed_time << " secs. There are " << exact_n_bf << " butterflies." << endl;
 }
 
-string algorithm_names[8] = { "Exact", "Edge Sampling", "Fast Edge Sampling", "Vertex Sampling", "Wedge Sampling", "Edge Sparsification", "Colorful Sparsification" };
+string algorithm_names [8] = { "Exact", "Edge Sampling", "Fast Edge Sampling", "Vertex Sampling", "Wedge Sampling", "Edge Sparsification", "Colorful Sparsification" };
 void read_the_graph() {
 	clear_everything();
 	cerr << " Insert the input (bipartite network) file location" << endl;
@@ -828,7 +830,7 @@ void choose_algorithm() {
 			stringstream ss; ss << comm; ss >> exact_n_bf;
 		}
 		else {
-			cerr << " As you do not know the exact number of butterflies, we are running the exact algorithm ... (please wait)\n";
+			cerr << " As you do not know the exact number of butterflies, we are going to run the exact algorithm ... \n";
 			exact_algorithm_time_tracker();
 		}
 	}
@@ -836,8 +838,8 @@ void choose_algorithm() {
 		read_the_graph();
 	}
 
-	cerr << " " << algorithm_names[chosen - 1] << "Algorithm is running ... (please wait) " << endl;
-	if (chosen == 1) {
+	cerr << " " << algorithm_names [chosen - 1] << "Algorithm is running ... (please wait) " << endl;
+	if	(chosen == 1) {
 		exact_algorithm_time_tracker();
 	}
 	else {
