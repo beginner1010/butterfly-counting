@@ -331,11 +331,12 @@ ld colorful_sparsification(int num_clr) {
 	random_device rdev_colorful;
 	mt19937 eng_colorful(rdev_colorful());
 	uniform_int_distribution<int> dis(0, num_clr - 1);
+
 	for (int i = 0; i < n_vertices; i++) {
 		clr[i] = dis(eng_colorful);
 	}
-
 	sampled_adj_list.resize(n_vertices, (vector<int>()));
+
 	n_wedge_in_partition[0] = n_wedge_in_partition[1] = 0;
 	for (auto edge : edges) {
 		int A = edge.first;
@@ -357,6 +358,7 @@ ld edge_saprsification(double prob) {
 	mt19937 eng_edg_sprs(rdev_edge_sprs());
 	uniform_real_distribution<double> dis(0.0, 1.0);
 	
+	sampled_adj_list.clear();
 	sampled_adj_list.resize(n_vertices, (vector<int>()));
 
 	n_wedge_in_partition[0] = n_wedge_in_partition[1] = 0;
@@ -491,7 +493,7 @@ ld vertex_sampling(uniform_int_distribution<ll> &dis, mt19937_64 &eng, int &mx, 
 }
 
 void edge_sparsfication_time_tracker() {
-	for (double prob = 0.012; prob < 0.04; prob += 0.002) {
+	for (double prob = 0.012; prob < 1.0; prob *= 2) {
 		vector < pair < ld, pair <ld, ld> > > aux_res;
 		for (int i = 0; i < N_SPARSIFICATION_ITERATIONS; i++) {
 			double beg_clock = clock();
@@ -501,6 +503,7 @@ void edge_sparsfication_time_tracker() {
 			double elpased_time = double(end_clock - beg_clock) / CLOCKS_PER_SEC;
 			aux_res.push_back(make_pair(error, make_pair(elpased_time, res)));
 		}
+
 		sort(aux_res.begin(), aux_res.end());
 		double elpased_time = aux_res[N_SPARSIFICATION_ITERATIONS / 2].second.first;
 		ld Er = aux_res[N_SPARSIFICATION_ITERATIONS / 2].first;
@@ -838,12 +841,15 @@ void choose_algorithm() {
 		read_the_graph();
 	}
 
-	cerr << " " << algorithm_names [chosen - 1] << "Algorithm is running ... (please wait) " << endl;
+	cerr << " " << algorithm_names [chosen - 1] << " Algorithm is running ... (please wait) " << endl;
 	if	(chosen == 1) {
 		exact_algorithm_time_tracker();
 	}
 	else {
-		cout << "Time(sec) #Iterations Error(%)" << endl;
+		if (chosen <= 5)
+			cout << "Time(sec) #Iterations Error(%)" << endl;
+		else 
+			cout << "Time(sec) Probability Error(%)" << endl;
 		if (chosen == 2) {
 			edge_sampling_time_tracker();
 		}
