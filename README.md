@@ -1,8 +1,16 @@
 <h1 align="center">Butterfly Counting in Bipartite Networks</h1>
 
 <h2>Paper</h2>
+<h4>
 You may find our paper on ArXiv: https://arxiv.org/pdf/1801.00338v4.pdf
-Published in KDD2018: https://dl.acm.org/citation.cfm?id=3220097
+</h4>
+
+<h4>
+Our paper is published in KDD2018: https://dl.acm.org/citation.cfm?id=3220097
+<h4>
+
+Please use the following BiBTeX for citing our paper:
+```bibtex
 @inproceedings{sanei2018butterfly,
   title={Butterfly Counting in Bipartite Networks},
   author={Sanei-Mehri, Seyed-Vahid and Sariyuce, Ahmet Erdem and Tirthapura, Srikanta},
@@ -11,7 +19,9 @@ Published in KDD2018: https://dl.acm.org/citation.cfm?id=3220097
   year={2018},
   organization={ACM}
 }
-<h4>Abstract</h4>
+```
+
+<h3>Abstract</h3>
 We consider the problem of counting motifs in bipartite affiliation networks, such as author-paper, user-product, and actor-movie relations. We focus on counting the number of occurrences of a "butterfly", a complete 2 x 2 biclique, the simplest cohesive higher-order structure in a bipartite graph. Our main contribution is a suite of randomized algorithms that can quickly approximate the number of butterflies in a graph with a provable guarantee on accuracy. An experimental evaluation on large real-world networks shows that our algorithms return accurate estimates within a few seconds, even for networks with trillions of butterflies and hundreds of millions of edges.
 <br></br>
 <p align="center">
